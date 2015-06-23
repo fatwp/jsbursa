@@ -106,6 +106,14 @@
     });
   };
 
+  Admin.prototype.save = function adminsave(callback) {
+
+  };
+
+  Admin.prototype.remove = function adminsave(callback) {
+
+  };
+
   window.User = User;
   window.Student = Student;
   window.Support = Support;
