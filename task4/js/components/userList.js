@@ -78,12 +78,12 @@
     container.appendChild(generateTemplate(item));
     container.classList.remove('lime');
     container.classList.remove('blue-grey');
-    if (item instanceof Student && item.strikes === 1) {
-      container.classList.add('lime');
-    }
-    if (item instanceof Student && item.strikes > 1) {
-      container.classList.add('blue-grey');
-    }
+    //if (item instanceof Student && item.strikes === 1) {
+    //  container.classList.add('lime');
+    //}
+    //if (item instanceof Student && item.strikes > 1) {
+    //  container.classList.add('blue-grey');
+    //}
 
     animate(container);
   };
