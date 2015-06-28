@@ -3,73 +3,131 @@ $(function() {
 
   var list;
 
-  //var data = localStorage.getItem('items');
-  //if (data) {
-  //  order = JSON.parse(data);
-  //}
+  var getData1 = [];
+  var getData2 = [];
+  var getData3 = [];
 
-    function getStudent() {
+  var setData1 = [];
+  var setData2 = [];
+  var setData3 = [];
 
-    $.get( window.url, function( data ) {
-      var li;
+  var active = localStorage.getItem('active');
+  if (active) {
+    active = JSON.parse(active);
+    _.forEach(active, function(n, key){
+      console.log(n.id);
+    });
+  }
+  var redcard = localStorage.getItem('redcard');
+  if (redcard) {
+    redcard = JSON.parse(redcard);
+    _.forEach(redcard, function(n, key){
+      console.log(n.id);
+    });
+  }
+  var removed = localStorage.getItem('removed');
+  if (removed) {
+    removed = JSON.parse(removed);
+    _.forEach(removed, function(n, key){
+      console.log(n.id);
+    });
+  }
+
+  $.get( window.url, function( data ) {
+    var li;
+
+    if (active && redcard && removed) {
+
+      _.forEach(active, function (n, key) {
+        list = $(".active ul");
+        //getData1.push(n.id);
+        li = document.createElement("li");
+        $(li).attr("data-id", n.id);
+        li.innerHTML = "<h3>" + n.name + "</h3><h4>" + n.phone + "</h4>";
+        list.append(li);
+      });
+
+      _.forEach(redcard, function (n, key) {
+        list = $(".redcard ul");
+        //getData2.push(n.id);
+        li = document.createElement("li");
+        $(li).attr("data-id", n.id);
+        li.innerHTML = "<h3>" + n.name + "</h3><h4>" + n.phone + "</h4>";
+        list.append(li);
+      });
+
+      _.forEach(removed, function (n, key) {
+        list = $(".removed ul");
+        //getData3.push(n.id);
+        li = document.createElement("li");
+        $(li).attr("data-id", n.id);
+        li.innerHTML = "<h3>" + n.name + "</h3><h4>" + n.phone + "</h4>";
+        list.append(li);
+      });
+
+    } else {
       _.forEach(data, function(n, key) {
         if (n.status === "active") {
           list = $(".active ul");
-          list.addClass("connectedSortable active");
+          getData1.push(n.id);
         } else if (n.status === "redcard") {
           list = $(".redcard ul");
-          list.addClass("connectedSortable redcard");
+          getData2.push(n.id);
         } else {
           list = $(".removed ul");
-          list.addClass("connectedSortable removed");
+          getData3.push(n.id);
         }
-
         li = document.createElement("li");
         $(li).attr("data-id", n.id);
-        li.innerHTML = "<h3>" + n.name + "</h3><h4>" + n.pnone + "</h4>";
+        li.innerHTML = "<h3>" + n.name + "</h3><h4>" + n.phone + "</h4>";
         list.append(li);
-
       });
-    }, "json" );
-  }
 
-  getStudent();
+      console.log(getData1);
+      console.log(getData2);
+      console.log(getData3);
+    }
+  }, "json" );
 
-  $( "ul" ).sortable({
+  $("ul").sortable({
     placeholder: "ui-state-highlight",
-    connectWith: ".connectedSortable",
-    change: function( event, ui ) {
+    connectWith: "ul",
+    update: function( event, ui ) {
+      var lis = $('li:not(.ui-state-highlight)');
 
-      //var connectWith = $( "ul" ).sortable( "option", "connectWith" );
-
-      //var newStatus = this.classList[2];
-      //console.log(newStatus);
-      //console.log(ui.item.data("id"));
-
-      var list1 = $(".active li");
-      var list2 = $(".redcard ul");
-      var list3 = $(".removed ul");
-
-      var arr1 = [];
-      var arr2 = [];
-      var arr3 = [];
-
-      _.forEach(list1, function(n, key) {
-        console.log(n, key);
+      _.forEach(lis, function(n, key) {
+        var h3 = $(n).find('h3')[0].innerHTML;
+        var h4 = $(n).find('h4')[0].innerHTML;
+        var st = n.parentNode.parentNode.classList[1];
+        if ( st === 'active') {
+          setData1.push({ 'id':n.getAttribute('data-id'), 'name':h3, 'phone':h4});
+        } else if ( st === 'redcard') {
+          setData2.push({ 'id':n.getAttribute('data-id'), 'name':h3, 'phone':h4});
+        } else if ( st === 'removed') {
+          setData3.push({ 'id':n.getAttribute('data-id'), 'name':h3, 'phone':h4});
+        }
       });
 
-      //localStorage.setItem('items1', JSON.stringify(state));
-      //localStorage.setItem('items2', JSON.stringify(state));
-      //localStorage.setItem('items3', JSON.stringify(state));
+      localStorage.setItem('active', JSON.stringify(setData1));
+      localStorage.setItem('redcard', JSON.stringify(setData2));
+      localStorage.setItem('removed', JSON.stringify(setData3));
+
     },
     receive: function( event, ui ) {
-      var newStatus = this.classList[2];
-      $.post(window.url + '/' + ui.item.data("id"), {status: newStatus}, function( data ) {
-        //  console.log(data);
-        //  console.log( data.name ); // John
-        //  console.log( data.time ); // 2pm
-      });
+      var newStatus = this.parentNode.classList[1];
+      var oldStatus = ui.sender[0].parentNode.classList[1];
+
+      if(oldStatus !== 'removed') {
+        $.post(window.url + '/' + ui.item.data("id"), {status: newStatus}, function (data) {
+        })
+          .done(function () {
+          })
+          .fail(function () {
+            $(ui.sender).sortable('cancel');
+          });
+      } else {
+        $(ui.sender).sortable('cancel');
+      }
     }
   });
-
 });
